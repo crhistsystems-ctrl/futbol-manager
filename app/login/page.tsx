@@ -34,9 +34,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <div className="text-6xl mb-3">⚽</div>
-          <h1 className="font-bebas text-5xl tracking-widest" style={{ color: '#22c55e' }}>
-            MIGUEL FC
+          <div className="flex justify-center mb-4">
+            <img src="/logo.png" alt="Pumas F.C." className="w-28 h-28 object-contain" />
+          </div>
+          <h1 className="font-bebas text-5xl tracking-widest" style={{ color: '#f59e0b' }}>
+            PUMAS F.C.
           </h1>
           <p className="text-sm mt-1" style={{ color: '#6b7280' }}>
             Gestión de jugadores
@@ -82,7 +84,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-3 rounded-xl font-semibold text-white transition-all mt-2"
             style={{
-              background: loading ? '#16a34a90' : '#22c55e',
+              background: loading ? '#1e40af90' : '#1d4ed8',
               cursor: loading ? 'not-allowed' : 'pointer',
             }}
           >

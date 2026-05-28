@@ -47,7 +47,7 @@ export default function JugadoresPage() {
           <Link
             href="/jugadores/nuevo"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-            style={{ background: '#22c55e' }}
+            style={{ background: '#1d4ed8' }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
               <line x1="12" y1="5" x2="12" y2="19" />
@@ -87,7 +87,7 @@ export default function JugadoresPage() {
               onClick={() => setFiltro(f)}
               className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors"
               style={{
-                background: filtro === f ? '#22c55e' : '#141414',
+                background: filtro === f ? '#1d4ed8' : '#141414',
                 color: filtro === f ? '#fff' : '#9ca3af',
                 border: filtro === f ? 'none' : '1px solid #1f1f1f',
               }}
@@ -116,8 +116,8 @@ export default function JugadoresPage() {
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold flex-shrink-0"
                   style={{
-                    background: j.activo ? '#22c55e18' : '#6b728018',
-                    color: j.activo ? '#22c55e' : '#6b7280',
+                    background: j.activo ? '#1d4ed818' : '#6b728018',
+                    color: j.activo ? '#1d4ed8' : '#6b7280',
                   }}
                 >
                   {j.nombre.charAt(0).toUpperCase()}
@@ -129,7 +129,7 @@ export default function JugadoresPage() {
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-medium" style={{ color: '#22c55e' }}>
+                  <p className="text-sm font-medium" style={{ color: '#f59e0b' }}>
                     {formatCOP(Number(j.cuota_mensual))}
                   </p>
                   {!j.activo && (

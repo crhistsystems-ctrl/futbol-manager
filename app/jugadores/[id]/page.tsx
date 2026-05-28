@@ -97,7 +97,7 @@ export default function JugadorDetallePage() {
           <button
             onClick={() => router.push('/jugadores')}
             className="mt-3 text-sm underline"
-            style={{ color: '#22c55e' }}
+            style={{ color: '#1d4ed8' }}
           >
             Volver a jugadores
           </button>
@@ -138,7 +138,7 @@ export default function JugadorDetallePage() {
           <button
             onClick={() => { setEditando(e => !e); setEditForm(jugador); }}
             className="p-2 rounded-lg transition-colors"
-            style={{ color: editando ? '#22c55e' : '#6b7280' }}
+            style={{ color: editando ? '#1d4ed8' : '#6b7280' }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -192,7 +192,7 @@ export default function JugadorDetallePage() {
                   onClick={saveEdit}
                   disabled={savingEdit}
                   className="flex-1 py-2 rounded-lg text-sm font-semibold text-white"
-                  style={{ background: '#22c55e' }}
+                  style={{ background: '#1d4ed8' }}
                 >
                   {savingEdit ? 'Guardando...' : 'Guardar'}
                 </button>
@@ -207,7 +207,7 @@ export default function JugadorDetallePage() {
                 <InfoRow
                   label="Cuota mensual"
                   value={formatCOP(Number(jugador.cuota_mensual))}
-                  valueColor="#22c55e"
+                  valueColor="#f59e0b"
                 />
                 <div className="mt-2">
                   <InfoRow
@@ -226,7 +226,7 @@ export default function JugadorDetallePage() {
           <button
             onClick={() => setMostrarFormPago(true)}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white text-sm"
-            style={{ background: '#22c55e' }}
+            style={{ background: '#1d4ed8' }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
               <line x1="12" y1="5" x2="12" y2="19" />
@@ -239,8 +239,8 @@ export default function JugadorDetallePage() {
             className="px-4 py-3 rounded-xl text-sm font-medium transition-colors"
             style={{
               background: 'transparent',
-              border: jugador.activo ? '1px solid #ef444430' : '1px solid #22c55e30',
-              color: jugador.activo ? '#ef4444' : '#22c55e',
+              border: jugador.activo ? '1px solid #ef444430' : '1px solid #1d4ed830',
+              color: jugador.activo ? '#ef4444' : '#1d4ed8',
             }}
           >
             {jugador.activo ? 'Desactivar' : 'Reactivar'}
@@ -462,7 +462,7 @@ function FormPago({
             type="submit"
             disabled={loading}
             className="w-full py-3 rounded-xl font-semibold text-white mt-1"
-            style={{ background: loading ? '#16a34a80' : '#22c55e', cursor: loading ? 'not-allowed' : 'pointer' }}
+            style={{ background: loading ? '#1e40af80' : '#1d4ed8', cursor: loading ? 'not-allowed' : 'pointer' }}
           >
             {loading ? 'Guardando...' : 'Confirmar pago'}
           </button>

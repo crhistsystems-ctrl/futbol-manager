@@ -138,7 +138,7 @@ export default function DashboardPage() {
                 <button
                   onClick={() => router.push('/jugadores/nuevo')}
                   className="mt-3 text-sm underline"
-                  style={{ color: '#22c55e' }}
+                  style={{ color: '#1d4ed8' }}
                 >
                   Agregar el primero
                 </button>

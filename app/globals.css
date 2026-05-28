@@ -4,7 +4,8 @@
   --color-background: #0a0a0a;
   --color-card: #141414;
   --color-border: #242424;
-  --color-accent: #22c55e;
+  --color-accent: #1d4ed8;
+  --color-gold: #f59e0b;
   --font-bebas: var(--font-bebas);
   --font-sans: var(--font-dm-sans);
 }
@@ -25,7 +26,7 @@ body {
   height: 4px;
 }
 ::-webkit-scrollbar-track { background: #141414; }
-::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: #1d4ed8; border-radius: 2px; }
 
 input[type="text"],
 input[type="password"],
@@ -50,7 +51,7 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #22c55e;
+  border-color: #1d4ed8;
 }
 
 input::placeholder,

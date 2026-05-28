@@ -15,15 +15,26 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Miguel FC',
+  title: 'Pumas F.C.',
   description: 'Gestión de jugadores y pagos',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${bebas.variable} ${dmSans.variable}`}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#1d4ed8" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Pumas F.C." />
+        <link rel="apple-touch-icon" href="/logo.png" />
+      </head>
       <body>
         <Providers>{children}</Providers>
+        <script dangerouslySetInnerHTML={{
+          __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js');})}`,
+        }} />
       </body>
     </html>
   );

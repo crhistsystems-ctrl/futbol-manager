@@ -50,8 +50,9 @@ export default function Navbar() {
       {/* Desktop top bar */}
       <header className="hidden md:flex items-center justify-between px-6 py-4 sticky top-0 z-50"
         style={{ background: '#0a0a0a', borderBottom: '1px solid #1f1f1f' }}>
-        <Link href="/dashboard" className="font-bebas text-2xl tracking-widest" style={{ color: '#22c55e' }}>
-          MIGUEL FC
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <img src="/logo.png" alt="Pumas F.C." className="w-8 h-8 object-contain" />
+          <span className="font-bebas text-2xl tracking-widest" style={{ color: '#f59e0b' }}>PUMAS F.C.</span>
         </Link>
         <nav className="flex items-center gap-1">
           {LINKS.map(link => (
@@ -60,8 +61,8 @@ export default function Navbar() {
               href={link.href}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               style={{
-                background: pathname.startsWith(link.href) ? '#22c55e15' : 'transparent',
-                color: pathname.startsWith(link.href) ? '#22c55e' : '#9ca3af',
+                background: pathname.startsWith(link.href) ? '#1d4ed815' : 'transparent',
+                color: pathname.startsWith(link.href) ? '#1d4ed8' : '#9ca3af',
               }}
             >
               {link.icon}
@@ -89,7 +90,7 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               className="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors"
-              style={{ color: pathname.startsWith(link.href) ? '#22c55e' : '#6b7280' }}
+              style={{ color: pathname.startsWith(link.href) ? '#1d4ed8' : '#6b7280' }}
             >
               {link.icon}
               {link.label}

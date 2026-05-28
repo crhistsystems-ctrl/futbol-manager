@@ -146,7 +146,7 @@ export default function NuevoJugadorPage() {
               type="submit"
               disabled={loading}
               className="flex-1 py-3 rounded-xl font-semibold text-white transition-all"
-              style={{ background: loading ? '#16a34a80' : '#22c55e', cursor: loading ? 'not-allowed' : 'pointer' }}
+              style={{ background: loading ? '#1e40af80' : '#1d4ed8', cursor: loading ? 'not-allowed' : 'pointer' }}
             >
               {loading ? 'Guardando...' : 'Guardar'}
             </button>
