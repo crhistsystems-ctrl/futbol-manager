@@ -34,13 +34,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <div className="flex justify-center mb-4">
-            <img src="/logo.png" alt="Pumas F.C." className="w-28 h-28 object-contain" />
+          <div className="flex justify-center mb-2">
+            <img src="/logo.png" alt="Pumas F.C." className="w-56 h-56 object-contain" />
           </div>
-          <h1 className="font-bebas text-5xl tracking-widest" style={{ color: '#f59e0b' }}>
-            PUMAS F.C.
-          </h1>
-          <p className="text-sm mt-1" style={{ color: '#6b7280' }}>
+          <p className="text-sm" style={{ color: '#6b7280' }}>
             Gestión de jugadores
           </p>
         </div>
