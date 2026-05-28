@@ -35,7 +35,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <div className="flex justify-center mb-2">
-            <img src="/logo.png" alt="Pumas F.C." className="w-56 h-56 object-contain" />
+            <img src="/logo.png" alt="Pumas F.C." className="w-80 h-80 object-contain" />
           </div>
           <p className="text-sm" style={{ color: '#6b7280' }}>
             Gestión de jugadores
