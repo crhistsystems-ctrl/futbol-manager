@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { getJugador, updateJugador } from '@/lib/sheets';
+import { getJugador, updateJugador } from '@/lib/db';
 
 export const runtime = 'edge';
 
@@ -27,8 +27,8 @@ export async function PUT(req: Request, { params }: Params) {
   const { id } = await params;
   try {
     const body = await req.json();
-    const jugador = await updateJugador(id, body);
-    return NextResponse.json(jugador);
+    const result = await updateJugador(id, body);
+    return NextResponse.json(result);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';
     return NextResponse.json({ error: msg }, { status: 500 });

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { getJugadores, addJugador } from '@/lib/sheets';
+import { getJugadores, addJugador } from '@/lib/db';
 
 export const runtime = 'edge';
 

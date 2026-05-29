@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { getDashboard } from '@/lib/sheets';
+import { getDashboard } from '@/lib/db';
 
 export const runtime = 'edge';
 

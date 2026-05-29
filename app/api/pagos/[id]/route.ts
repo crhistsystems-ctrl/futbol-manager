@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { deletePago } from '@/lib/sheets';
+import { deletePago } from '@/lib/db';
 
 export const runtime = 'edge';
 
