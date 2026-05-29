@@ -1,4 +1,4 @@
-const CACHE = 'pumas-fc-v1';
+const CACHE = 'pumas-fc-v2';
 const STATIC = ['/', '/dashboard', '/jugadores', '/login', '/logo.png', '/manifest.json'];
 
 self.addEventListener('install', e => {
