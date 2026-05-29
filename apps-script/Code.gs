@@ -160,6 +160,16 @@ function getJugadorById(id) {
 }
 
 function addJugadorData(payload) {
+  var existentes = getJugadoresData();
+  var duplicado = existentes.find(function(j) {
+    return j.activo &&
+      j.nombre.trim().toLowerCase() === (payload.nombre || '').trim().toLowerCase() &&
+      j.telefono.trim() === (payload.telefono || '').trim();
+  });
+  if (duplicado) {
+    return { error: 'ya existe un jugador activo con ese nombre y teléfono', id: duplicado.id };
+  }
+
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Jugadores');
   var id = Utilities.getUuid();
 

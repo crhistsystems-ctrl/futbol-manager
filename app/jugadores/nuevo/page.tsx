@@ -33,14 +33,22 @@ export default function NuevoJugadorPage() {
         }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Error al guardar');
+      const data = await res.json();
+
+      if (data.error) {
+        // Si el jugador ya existe, redirige directo
+        if (data.error.includes('ya existe')) {
+          router.push('/jugadores');
+          return;
+        }
+        throw new Error(data.error);
       }
 
       router.push('/jugadores');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo guardar el jugador.');
+      // Redirige a la lista igual — el dato puede haberse guardado
+      setError('Hubo un error. Revisa la lista para confirmar si fue agregado.');
+      setTimeout(() => router.push('/jugadores'), 2500);
     } finally {
       setLoading(false);
     }
