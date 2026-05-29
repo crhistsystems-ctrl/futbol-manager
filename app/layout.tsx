@@ -17,6 +17,18 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: 'Pumas F.C.',
   description: 'Gestión de jugadores y pagos',
+  openGraph: {
+    title: 'Pumas F.C.',
+    description: 'Gestión de jugadores y pagos',
+    images: [
+      {
+        url: '/logo.png',
+        width: 512,
+        height: 512,
+        alt: 'Pumas F.C. Logo',
+      },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
