@@ -74,6 +74,14 @@ function doGet(e) {
         return jsonResponse(getJugadorById(e.parameter.id));
       case 'getPagos':
         return jsonResponse(getPagosData(e.parameter.jugadorId, e.parameter.mes, e.parameter.año));
+      case 'addJugador':
+        return jsonResponse(addJugadorData(e.parameter));
+      case 'updateJugador':
+        return jsonResponse(updateJugadorData(e.parameter.id, e.parameter));
+      case 'addPago':
+        return jsonResponse(addPagoData(e.parameter));
+      case 'deletePago':
+        return jsonResponse(deletePagoData(e.parameter.id));
       default:
         return jsonResponse({ error: 'Acción desconocida: ' + action });
     }
