@@ -31,11 +31,13 @@ export function calcProximoPago(jugador: Jugador, todosPagos: Pago[]): ProximoPa
   const pagosJugador = todosPagos.filter(p => p.jugador_id === jugador.id);
 
   if (pagosJugador.length === 0) {
+    // Primer pago = mismo día del mes siguiente al ingreso
     const inicio = jugador.fecha_ingreso ? new Date(jugador.fecha_ingreso + 'T00:00:00') : hoy;
-    const mesesDeuda = Math.max(0,
-      (hoy.getFullYear() - inicio.getFullYear()) * 12 + (hoy.getMonth() - inicio.getMonth())
-    );
-    return { diasHasta: -mesesDeuda * 30, fecha: inicio, mesesDeuda };
+    const nextDue = new Date(inicio);
+    nextDue.setMonth(nextDue.getMonth() + 1);
+    const diasHasta = Math.floor((nextDue.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+    const mesesDeuda = diasHasta < 0 ? Math.ceil(Math.abs(diasHasta) / 30) : 0;
+    return { diasHasta, fecha: nextDue, mesesDeuda };
   }
 
   // Pago más reciente
