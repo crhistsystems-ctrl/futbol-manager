@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { revalidatePath } from 'next/cache';
 import { authOptions } from '@/lib/auth';
 import { deletePago } from '@/lib/sheets';
 
@@ -13,8 +12,6 @@ export async function DELETE(_req: Request, { params }: Params) {
   const { id } = await params;
   try {
     const result = await deletePago(id);
-    revalidatePath('/dashboard');
-    revalidatePath('/jugadores');
     return NextResponse.json(result);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';

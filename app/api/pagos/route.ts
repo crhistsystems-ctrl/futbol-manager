@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { revalidatePath } from 'next/cache';
 import { authOptions } from '@/lib/auth';
 import { getPagos, addPago } from '@/lib/sheets';
 
@@ -27,8 +26,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const pago = await addPago(body);
-    revalidatePath('/dashboard');
-    revalidatePath('/jugadores');
     return NextResponse.json(pago);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';
