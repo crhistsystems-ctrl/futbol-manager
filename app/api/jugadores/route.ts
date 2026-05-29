@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getToken } from 'next-auth/jwt';
 import { getJugadores, addJugador } from '@/lib/sheets';
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+export const runtime = 'edge';
+
+export async function GET(req: Request) {
+  const token = await getToken({ req: req as Parameters<typeof getToken>[0]['req'], secret: process.env.NEXTAUTH_SECRET });
+  if (!token) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
   try {
     const jugadores = await getJugadores();
@@ -17,8 +18,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  const token = await getToken({ req: req as Parameters<typeof getToken>[0]['req'], secret: process.env.NEXTAUTH_SECRET });
+  if (!token) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
   try {
     const body = await req.json();
