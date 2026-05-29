@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import type { Jugador, Pago } from '@/types';
-import { formatCOP, formatMes, calcProximoPago, labelDias, colorDias } from '@/lib/format';
+import { formatCOP, formatMes, calcProximoPago, labelDias, colorDias, type ProximoPago } from '@/lib/format';
 
 export default function DashboardPage() {
   const today = new Date();
@@ -183,15 +183,13 @@ function PlayerRow({
   jugador: Jugador;
   status: 'pago' | 'debe';
   monto?: number;
-  proximoPago: { diasHasta: number; mesesDeuda: number; pendienteParcial?: number };
+  proximoPago: ProximoPago;
   onClick: () => void;
 }) {
   const dias = proximoPago.diasHasta;
   const isParcial = status === 'debe' && (proximoPago.pendienteParcial ?? 0) > 0;
   const accentColor = isParcial ? '#f59e0b' : status === 'pago' ? '#22c55e' : '#ef4444';
-  const etiqueta = isParcial
-    ? `Abono parcial — faltan ${formatCOP(proximoPago.pendienteParcial!)}`
-    : labelDias(dias);
+  const etiqueta = labelDias(proximoPago);
   const subtextColor = isParcial ? '#f59e0b' : colorDias(dias);
 
   return (
