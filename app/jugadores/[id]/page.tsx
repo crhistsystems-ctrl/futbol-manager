@@ -484,7 +484,15 @@ function FormPago({
             <input
               type="date"
               value={form.fecha}
-              onChange={e => setForm(p => ({ ...p, fecha: e.target.value }))}
+              onChange={e => {
+                const d = new Date(e.target.value + 'T00:00:00');
+                setForm(p => ({
+                  ...p,
+                  fecha: e.target.value,
+                  mes: d.getMonth() + 1,
+                  año: d.getFullYear(),
+                }));
+              }}
               required
             />
           </div>

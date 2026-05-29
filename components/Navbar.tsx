@@ -35,8 +35,8 @@ function IconLogout() {
 }
 
 const LINKS = [
-  { href: '/dashboard', label: 'Panel', icon: <IconGrid /> },
   { href: '/jugadores', label: 'Jugadores', icon: <IconUsers /> },
+  { href: '/dashboard', label: 'Panel', icon: <IconGrid /> },
 ];
 
 export default function Navbar() {
@@ -50,7 +50,7 @@ export default function Navbar() {
       {/* Desktop top bar */}
       <header className="hidden md:flex items-center justify-between px-6 py-4 sticky top-0 z-50"
         style={{ background: '#0a0a0a', borderBottom: '1px solid #1f1f1f' }}>
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/jugadores" className="flex items-center gap-2">
           <img src="/logo.png" alt="Pumas F.C." className="w-14 h-14 object-contain" />
           <span className="font-bebas text-2xl tracking-widest" style={{ color: '#f59e0b' }}>PUMAS F.C.</span>
         </Link>
