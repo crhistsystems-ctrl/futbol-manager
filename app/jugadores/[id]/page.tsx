@@ -72,7 +72,7 @@ export default function JugadorDetallePage() {
   const deletePagoHandler = async (pagoId: string) => {
     if (!confirm('¿Eliminar este pago?')) return;
     await fetch(`/api/pagos/${pagoId}`, { method: 'DELETE' });
-    fetchData();
+    setPagos(prev => prev.filter(p => p.id !== pagoId));
   };
 
   const totalPagado = pagos.reduce((s, p) => s + Number(p.monto), 0);
@@ -311,8 +311,17 @@ export default function JugadorDetallePage() {
       {mostrarFormPago && (
         <FormPago
           jugador={jugador}
+          pagos={pagos}
           onClose={() => setMostrarFormPago(false)}
-          onSuccess={() => { setMostrarFormPago(false); fetchData(); }}
+          onSuccess={(nuevoPago: Pago) => {
+            setPagos(prev =>
+              [nuevoPago, ...prev].sort((a, b) => {
+                if (Number(b.año) !== Number(a.año)) return Number(b.año) - Number(a.año);
+                return Number(b.mes) - Number(a.mes);
+              })
+            );
+            setMostrarFormPago(false);
+          }}
         />
       )}
     </div>
@@ -347,12 +356,14 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function FormPago({
   jugador,
+  pagos,
   onClose,
   onSuccess,
 }: {
   jugador: Jugador;
+  pagos: Pago[];
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (pago: Pago) => void;
 }) {
   const today = new Date();
   const [form, setForm] = useState({
@@ -365,10 +376,26 @@ function FormPago({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const cuota = Number(jugador.cuota_mensual);
+  const yaAbonado = pagos
+    .filter(p => Number(p.mes) === form.mes && Number(p.año) === form.año)
+    .reduce((s, p) => s + Number(p.monto), 0);
+  const restante = Math.max(0, cuota - yaAbonado);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    if (Number(form.monto) <= 0) {
+      setError('El monto debe ser mayor a $0.');
+      return;
+    }
+    if (Number(form.monto) > restante) {
+      setError(`Máximo permitido: ${formatCOP(restante)} (ya abonó ${formatCOP(yaAbonado)} este mes).`);
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch('/api/pagos', {
         method: 'POST',
@@ -382,11 +409,9 @@ function FormPago({
           notas: form.notas,
         }),
       });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Error al guardar');
-      }
-      onSuccess();
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      onSuccess(data as Pago);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo registrar el pago.');
     } finally {
@@ -440,13 +465,20 @@ function FormPago({
             </div>
           </div>
           <div>
-            <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Monto (COP)</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs" style={{ color: '#9ca3af' }}>Monto (COP)</label>
+              <span className="text-xs" style={{ color: restante === 0 ? '#ef4444' : '#f59e0b' }}>
+                {restante === 0 ? 'Ya pagó completo este mes' : `Resta: ${formatCOP(restante)}`}
+              </span>
+            </div>
             <input
               type="number"
               value={form.monto}
               onChange={e => setForm(p => ({ ...p, monto: e.target.value }))}
               required
-              min={0}
+              min={1}
+              max={restante}
+              disabled={restante === 0}
             />
           </div>
           <div>
