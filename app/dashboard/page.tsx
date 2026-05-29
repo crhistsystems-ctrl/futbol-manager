@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import type { Jugador, Pago } from '@/types';
-import { formatCOP, formatMes } from '@/lib/format';
+import { formatCOP, formatMes, calcProximoPago, labelDias, colorDias } from '@/lib/format';
 
 export default function DashboardPage() {
   const today = new Date();
   const [mes, setMes] = useState(today.getMonth() + 1);
   const [año, setAño] = useState(today.getFullYear());
   const [jugadores, setJugadores] = useState<Jugador[]>([]);
-  const [pagos, setPagos] = useState<Pago[]>([]);
+  const [todosPagos, setTodosPagos] = useState<Pago[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -20,18 +20,18 @@ export default function DashboardPage() {
     try {
       const [jugRes, pagRes] = await Promise.all([
         fetch('/api/jugadores'),
-        fetch(`/api/pagos?mes=${mes}&año=${año}`),
+        fetch('/api/pagos'),
       ]);
       const [jugData, pagData] = await Promise.all([jugRes.json(), pagRes.json()]);
       setJugadores(Array.isArray(jugData) ? jugData.filter((j: Jugador) => j.activo) : []);
-      setPagos(Array.isArray(pagData) ? pagData : []);
+      setTodosPagos(Array.isArray(pagData) ? pagData : []);
     } catch {
       setJugadores([]);
-      setPagos([]);
+      setTodosPagos([]);
     } finally {
       setLoading(false);
     }
-  }, [mes, año]);
+  }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -45,14 +45,28 @@ export default function DashboardPage() {
     else setMes(m => m + 1);
   };
 
-  const jugadoresPagaron = jugadores.filter(j =>
-    pagos.some(p => p.jugador_id === j.id),
-  );
-  const jugadoresDeben = jugadores.filter(j =>
-    !pagos.some(p => p.jugador_id === j.id),
-  );
-  const totalRecaudado = pagos.reduce((s, p) => s + Number(p.monto), 0);
+  // Pagos del mes seleccionado
+  const pagosMes = todosPagos.filter(p => Number(p.mes) === mes && Number(p.año) === año);
+
+  const jugadoresPagaron = jugadores.filter(j => pagosMes.some(p => p.jugador_id === j.id));
+  const jugadoresDeben = jugadores.filter(j => !pagosMes.some(p => p.jugador_id === j.id));
+
+  const totalRecaudado = pagosMes.reduce((s, p) => s + Number(p.monto), 0);
   const totalEsperado = jugadores.reduce((s, j) => s + Number(j.cuota_mensual), 0);
+
+  // Ordenar pendientes: más días de deuda primero
+  const pendientesOrdenados = [...jugadoresDeben].sort((a, b) => {
+    const da = calcProximoPago(a, todosPagos).diasHasta;
+    const db = calcProximoPago(b, todosPagos).diasHasta;
+    return da - db;
+  });
+
+  // Ordenar al día: próximo vencimiento más cercano primero
+  const aldiaOrdenados = [...jugadoresPagaron].sort((a, b) => {
+    const da = calcProximoPago(a, todosPagos).diasHasta;
+    const db = calcProximoPago(b, todosPagos).diasHasta;
+    return da - db;
+  });
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
@@ -61,11 +75,7 @@ export default function DashboardPage() {
       <main className="max-w-2xl mx-auto px-4 pt-6 md:pt-8">
         {/* Month navigator */}
         <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={prevMes}
-            className="p-2 rounded-lg transition-colors"
-            style={{ color: '#6b7280' }}
-          >
+          <button onClick={prevMes} className="p-2 rounded-lg transition-colors" style={{ color: '#6b7280' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
               <polyline points="15 18 9 12 15 6" />
             </svg>
@@ -73,11 +83,7 @@ export default function DashboardPage() {
           <h2 className="font-bebas text-3xl tracking-wider text-white">
             {formatMes(mes, año).toUpperCase()}
           </h2>
-          <button
-            onClick={nextMes}
-            className="p-2 rounded-lg transition-colors"
-            style={{ color: '#6b7280' }}
-          >
+          <button onClick={nextMes} className="p-2 rounded-lg transition-colors" style={{ color: '#6b7280' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
               <polyline points="9 18 15 12 9 6" />
             </svg>
@@ -96,15 +102,16 @@ export default function DashboardPage() {
           <div className="text-center py-16" style={{ color: '#6b7280' }}>Cargando...</div>
         ) : (
           <>
-            {jugadoresDeben.length > 0 && (
+            {pendientesOrdenados.length > 0 && (
               <section className="mb-6">
-                <SectionHeader color="#ef4444" label={`Pendientes (${jugadoresDeben.length})`} />
+                <SectionHeader color="#ef4444" label={`Pendientes (${pendientesOrdenados.length})`} />
                 <div className="space-y-2">
-                  {jugadoresDeben.map(j => (
+                  {pendientesOrdenados.map(j => (
                     <PlayerRow
                       key={j.id}
                       jugador={j}
                       status="debe"
+                      proximoPago={calcProximoPago(j, todosPagos)}
                       onClick={() => router.push(`/jugadores/${j.id}`)}
                     />
                   ))}
@@ -112,18 +119,19 @@ export default function DashboardPage() {
               </section>
             )}
 
-            {jugadoresPagaron.length > 0 && (
+            {aldiaOrdenados.length > 0 && (
               <section className="mb-6">
-                <SectionHeader color="#22c55e" label={`Al día (${jugadoresPagaron.length})`} />
+                <SectionHeader color="#22c55e" label={`Al día (${aldiaOrdenados.length})`} />
                 <div className="space-y-2">
-                  {jugadoresPagaron.map(j => {
-                    const pago = pagos.find(p => p.jugador_id === j.id);
+                  {aldiaOrdenados.map(j => {
+                    const pago = pagosMes.find(p => p.jugador_id === j.id);
                     return (
                       <PlayerRow
                         key={j.id}
                         jugador={j}
                         status="pago"
                         monto={pago?.monto}
+                        proximoPago={calcProximoPago(j, todosPagos)}
                         onClick={() => router.push(`/jugadores/${j.id}`)}
                       />
                     );
@@ -153,10 +161,7 @@ export default function DashboardPage() {
 
 function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div
-      className="rounded-xl p-4"
-      style={{ background: '#141414', border: '1px solid #1f1f1f' }}
-    >
+    <div className="rounded-xl p-4" style={{ background: '#141414', border: '1px solid #1f1f1f' }}>
       <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#6b7280' }}>{label}</p>
       <p className="font-bebas text-2xl" style={{ color }}>{value}</p>
     </div>
@@ -167,24 +172,24 @@ function SectionHeader({ color, label }: { color: string; label: string }) {
   return (
     <div className="flex items-center gap-2 mb-3">
       <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-      <h3 className="text-sm font-medium uppercase tracking-wider" style={{ color }}>
-        {label}
-      </h3>
+      <h3 className="text-sm font-medium uppercase tracking-wider" style={{ color }}>{label}</h3>
     </div>
   );
 }
 
 function PlayerRow({
-  jugador,
-  status,
-  monto,
-  onClick,
+  jugador, status, monto, proximoPago, onClick,
 }: {
   jugador: Jugador;
   status: 'pago' | 'debe';
   monto?: number;
+  proximoPago: { diasHasta: number; mesesDeuda: number };
   onClick: () => void;
 }) {
+  const dias = proximoPago.diasHasta;
+  const etiqueta = labelDias(dias);
+  const color = colorDias(dias);
+
   return (
     <button
       onClick={onClick}
@@ -203,9 +208,7 @@ function PlayerRow({
         </div>
         <div>
           <p className="font-medium text-white text-sm">{jugador.nombre}</p>
-          <p className="text-xs" style={{ color: '#6b7280' }}>
-            Cuota: {formatCOP(Number(jugador.cuota_mensual))}
-          </p>
+          <p className="text-xs" style={{ color }}>{etiqueta}</p>
         </div>
       </div>
       <div className="text-right flex-shrink-0">
@@ -218,18 +221,21 @@ function PlayerRow({
               Pagó
             </span>
             {monto !== undefined && (
-              <p className="text-xs mt-0.5" style={{ color: '#22c55e' }}>
-                {formatCOP(Number(monto))}
-              </p>
+              <p className="text-xs mt-0.5" style={{ color: '#22c55e' }}>{formatCOP(Number(monto))}</p>
             )}
           </>
         ) : (
-          <span
-            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-            style={{ background: '#ef444415', color: '#ef4444' }}
-          >
-            Pendiente
-          </span>
+          <div className="text-right">
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+              style={{ background: '#ef444415', color: '#ef4444' }}
+            >
+              {proximoPago.mesesDeuda > 1 ? `${proximoPago.mesesDeuda} meses` : 'Pendiente'}
+            </span>
+            <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
+              {formatCOP(Number(jugador.cuota_mensual))}
+            </p>
+          </div>
         )}
       </div>
     </button>

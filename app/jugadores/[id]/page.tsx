@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import type { Jugador, Pago } from '@/types';
-import { formatCOP, formatFecha, formatMes, MESES } from '@/lib/format';
+import { formatCOP, formatFecha, formatMes, MESES, calcProximoPago, labelDias, colorDias } from '@/lib/format';
 
 export default function JugadorDetallePage() {
   const params = useParams();
@@ -203,19 +203,27 @@ export default function JugadorDetallePage() {
               <InfoRow label="Teléfono" value={jugador.telefono || '—'} />
               <InfoRow label="Acudiente" value={jugador.acudiente || '—'} />
               <InfoRow label="Ingresó" value={formatFecha(jugador.fecha_ingreso)} />
-              <div className="border-t pt-2.5" style={{ borderColor: '#1f1f1f' }}>
+              <div className="border-t pt-2.5 space-y-2" style={{ borderColor: '#1f1f1f' }}>
                 <InfoRow
                   label="Cuota mensual"
                   value={formatCOP(Number(jugador.cuota_mensual))}
                   valueColor="#f59e0b"
                 />
-                <div className="mt-2">
-                  <InfoRow
-                    label="Total pagado (histórico)"
-                    value={formatCOP(totalPagado)}
-                    valueColor="#ffffff"
-                  />
-                </div>
+                <InfoRow
+                  label="Total pagado (histórico)"
+                  value={formatCOP(totalPagado)}
+                  valueColor="#ffffff"
+                />
+                {(() => {
+                  const prox = calcProximoPago(jugador, pagos);
+                  return (
+                    <InfoRow
+                      label="Próximo pago"
+                      value={labelDias(prox.diasHasta)}
+                      valueColor={colorDias(prox.diasHasta)}
+                    />
+                  );
+                })()}
               </div>
             </div>
           )}
