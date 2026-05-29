@@ -26,7 +26,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError('Usuario o contraseña incorrectos');
     } else {
-      router.push('/dashboard');
+      router.push('/jugadores');
     }
   };
 

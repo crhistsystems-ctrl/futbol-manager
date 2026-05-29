@@ -73,6 +73,21 @@ export default function DashboardPage() {
       <Navbar />
 
       <main className="max-w-2xl mx-auto px-4 pt-6 md:pt-8">
+        {/* Header con botón agregar */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="font-bebas text-4xl text-white tracking-wider leading-none">PANEL</h1>
+          <button
+            onClick={() => router.push('/jugadores/nuevo')}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
+            style={{ background: '#1d4ed8' }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Agregar jugador
+          </button>
+        </div>
+
         {/* Month navigator */}
         <div className="flex items-center justify-between mb-6">
           <button onClick={prevMes} className="p-2 rounded-lg transition-colors" style={{ color: '#6b7280' }}>
@@ -94,7 +109,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <StatCard label="Recaudado" value={formatCOP(totalRecaudado)} color="#22c55e" />
           <StatCard label="Esperado" value={formatCOP(totalEsperado)} color="#d1d5db" />
-          <StatCard label="Pagaron" value={`${jugadoresPagaron.length} jugadores`} color="#22c55e" />
+          <StatCard label="Al día" value={`${jugadoresPagaron.length} jugadores`} color="#22c55e" />
           <StatCard label="Pendientes" value={`${jugadoresDeben.length} jugadores`} color="#ef4444" />
         </div>
 
