@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import type { Jugador, Pago } from '@/types';
-import { formatCOP, formatMes, formatFecha, calcProximoPago, labelDias, colorDias } from '@/lib/format';
+import { formatCOP, formatMes, calcProximoPago, labelDias, colorDias } from '@/lib/format';
 
 type Tab = 'jugadores' | 'panel';
 
@@ -138,47 +138,20 @@ export default function MainPage() {
                 {search ? 'Sin resultados.' : 'No hay jugadores activos.'}
               </div>
             ) : (
-              <div className="space-y-2">
-                {jugadoresFiltrados.map((j, i) => {
-                  const deuda = deudaMes(j);
-                  const alDia = deuda === 0;
-                  return (
-                    <button
-                      key={j.id}
-                      onClick={() => router.push(`/jugadores/${j.id}`)}
-                      className="w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors"
-                      style={{ background: '#141414', border: '1px solid #1f1f1f' }}
-                    >
-                      {/* Number */}
-                      <span className="text-xs font-bold w-5 text-right mt-0.5 flex-shrink-0" style={{ color: '#4b5563' }}>
-                        {i + 1}
-                      </span>
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-sm leading-snug">{j.nombre}</p>
-                        <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
-                          {j.telefono || '—'}
-                          {j.acudiente ? ` · ${j.acudiente}` : ''}
-                        </p>
-                        <p className="text-xs" style={{ color: '#4b5563' }}>
-                          Ingresó {formatFecha(j.fecha_ingreso)}
-                        </p>
-                      </div>
-                      {/* Status */}
-                      <div className="flex-shrink-0 text-right">
-                        {alDia ? (
-                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#22c55e15', color: '#22c55e' }}>
-                            Al día
-                          </span>
-                        ) : (
-                          <span className="text-sm font-semibold" style={{ color: '#f59e0b' }}>
-                            {formatCOP(deuda)}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="space-y-1">
+                {jugadoresFiltrados.map((j, i) => (
+                  <button
+                    key={j.id}
+                    onClick={() => router.push(`/jugadores/${j.id}`)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors"
+                    style={{ background: '#141414', border: '1px solid #1f1f1f' }}
+                  >
+                    <span className="text-xs w-5 text-right flex-shrink-0" style={{ color: '#4b5563' }}>
+                      {i + 1}
+                    </span>
+                    <span className="font-medium text-white text-sm">{j.nombre}</span>
+                  </button>
+                ))}
               </div>
             )}
           </div>
