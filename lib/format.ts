@@ -22,16 +22,17 @@ export interface ProximoPago {
   diasHasta: number;
   fecha: Date;
   mesesDeuda: number;
+  pendienteParcial?: number;
 }
 
 export function calcProximoPago(jugador: Jugador, todosPagos: Pago[]): ProximoPago {
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
+  const cuota = Number(jugador.cuota_mensual);
 
   const pagosJugador = todosPagos.filter(p => p.jugador_id === jugador.id);
 
   if (pagosJugador.length === 0) {
-    // Primer pago = mismo día del mes siguiente al ingreso
     const inicio = jugador.fecha_ingreso ? new Date(jugador.fecha_ingreso + 'T00:00:00') : hoy;
     const nextDue = new Date(inicio);
     nextDue.setMonth(nextDue.getMonth() + 1);
@@ -40,24 +41,43 @@ export function calcProximoPago(jugador: Jugador, todosPagos: Pago[]): ProximoPa
     return { diasHasta, fecha: nextDue, mesesDeuda };
   }
 
-  // Pago más reciente
-  const ultimo = pagosJugador.reduce((max, p) => {
-    const a = Number(p.año), m = Number(p.mes);
-    const ma = Number(max.año), mm = Number(max.mes);
-    return a > ma || (a === ma && m > mm) ? p : max;
-  });
+  // Agrupar pagos por mes/año y sumar montos
+  const porMes = new Map<string, number>();
+  for (const p of pagosJugador) {
+    const key = `${p.año}-${String(p.mes).padStart(2, '0')}`;
+    porMes.set(key, (porMes.get(key) ?? 0) + Number(p.monto));
+  }
 
-  // Próximo vencimiento = día 1 del mes siguiente al último pago
-  // new Date(año, mes, 1) — mes en JS es 0-indexed, pero ultimo.mes es 1-indexed
-  // entonces new Date(año, mes, 1) ya apunta al mes siguiente ✓
-  const nextDue = new Date(Number(ultimo.año), Number(ultimo.mes), 1);
+  // Último mes con algún pago
+  const ultimoKey = [...porMes.keys()].sort().at(-1)!;
+  const totalUltimo = porMes.get(ultimoKey)!;
+  const pendienteParcial = totalUltimo < cuota ? cuota - totalUltimo : undefined;
+
+  // Último mes completamente pagado (total >= cuota)
+  const ultimoCompleto = [...porMes.entries()]
+    .filter(([, total]) => total >= cuota)
+    .map(([key]) => key)
+    .sort()
+    .at(-1);
+
+  if (!ultimoCompleto) {
+    // Ningún mes pagado completo — sigue debiendo el mes del primer abono
+    const [año, mes] = ultimoKey.split('-').map(Number);
+    const nextDue = new Date(año, mes - 1, 1);
+    const diasHasta = Math.floor((nextDue.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+    return { diasHasta, fecha: nextDue, mesesDeuda: 0, pendienteParcial };
+  }
+
+  const [lastYear, lastMes] = ultimoCompleto.split('-').map(Number);
+  // new Date(año, mes, 1): lastMes es 1-indexed → apunta al mes siguiente en JS ✓
+  const nextDue = new Date(lastYear, lastMes, 1);
   const diasHasta = Math.floor((nextDue.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
 
   const mesHoy = hoy.getFullYear() * 12 + hoy.getMonth();
-  const mesUltimo = Number(ultimo.año) * 12 + (Number(ultimo.mes) - 1);
+  const mesUltimo = lastYear * 12 + (lastMes - 1);
   const mesesDeuda = Math.max(0, mesHoy - mesUltimo - 1);
 
-  return { diasHasta, fecha: nextDue, mesesDeuda };
+  return { diasHasta, fecha: nextDue, mesesDeuda, pendienteParcial };
 }
 
 export function labelDias(dias: number): string {

@@ -216,11 +216,15 @@ export default function JugadorDetallePage() {
                 />
                 {(() => {
                   const prox = calcProximoPago(jugador, pagos);
+                  const value = prox.pendienteParcial
+                    ? `Abono parcial — faltan ${formatCOP(prox.pendienteParcial)}`
+                    : labelDias(prox.diasHasta);
+                  const color = prox.pendienteParcial ? '#f59e0b' : colorDias(prox.diasHasta);
                   return (
                     <InfoRow
                       label="Próximo pago"
-                      value={labelDias(prox.diasHasta)}
-                      valueColor={colorDias(prox.diasHasta)}
+                      value={value}
+                      valueColor={color}
                     />
                   );
                 })()}

@@ -48,8 +48,11 @@ export default function DashboardPage() {
   // Pagos del mes seleccionado
   const pagosMes = todosPagos.filter(p => Number(p.mes) === mes && Number(p.año) === año);
 
-  const jugadoresPagaron = jugadores.filter(j => pagosMes.some(p => p.jugador_id === j.id));
-  const jugadoresDeben = jugadores.filter(j => !pagosMes.some(p => p.jugador_id === j.id));
+  const totalMesPorJugador = (jugadorId: string) =>
+    pagosMes.filter(p => p.jugador_id === jugadorId).reduce((s, p) => s + Number(p.monto), 0);
+
+  const jugadoresPagaron = jugadores.filter(j => totalMesPorJugador(j.id) >= Number(j.cuota_mensual));
+  const jugadoresDeben = jugadores.filter(j => totalMesPorJugador(j.id) < Number(j.cuota_mensual));
 
   const totalRecaudado = pagosMes.reduce((s, p) => s + Number(p.monto), 0);
   const totalEsperado = jugadores.reduce((s, j) => s + Number(j.cuota_mensual), 0);
@@ -124,13 +127,13 @@ export default function DashboardPage() {
                 <SectionHeader color="#22c55e" label={`Al día (${aldiaOrdenados.length})`} />
                 <div className="space-y-2">
                   {aldiaOrdenados.map(j => {
-                    const pago = pagosMes.find(p => p.jugador_id === j.id);
+                    const totalMes = totalMesPorJugador(j.id);
                     return (
                       <PlayerRow
                         key={j.id}
                         jugador={j}
                         status="pago"
-                        monto={pago?.monto}
+                        monto={totalMes}
                         proximoPago={calcProximoPago(j, todosPagos)}
                         onClick={() => router.push(`/jugadores/${j.id}`)}
                       />
@@ -183,12 +186,16 @@ function PlayerRow({
   jugador: Jugador;
   status: 'pago' | 'debe';
   monto?: number;
-  proximoPago: { diasHasta: number; mesesDeuda: number };
+  proximoPago: { diasHasta: number; mesesDeuda: number; pendienteParcial?: number };
   onClick: () => void;
 }) {
   const dias = proximoPago.diasHasta;
-  const etiqueta = labelDias(dias);
-  const color = colorDias(dias);
+  const isParcial = status === 'debe' && (proximoPago.pendienteParcial ?? 0) > 0;
+  const accentColor = isParcial ? '#f59e0b' : status === 'pago' ? '#22c55e' : '#ef4444';
+  const etiqueta = isParcial
+    ? `Abono parcial — faltan ${formatCOP(proximoPago.pendienteParcial!)}`
+    : labelDias(dias);
+  const subtextColor = isParcial ? '#f59e0b' : colorDias(dias);
 
   return (
     <button
@@ -199,16 +206,13 @@ function PlayerRow({
       <div className="flex items-center gap-3">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-          style={{
-            background: status === 'pago' ? '#22c55e15' : '#ef444415',
-            color: status === 'pago' ? '#22c55e' : '#ef4444',
-          }}
+          style={{ background: `${accentColor}15`, color: accentColor }}
         >
           {jugador.nombre.charAt(0).toUpperCase()}
         </div>
         <div>
           <p className="font-medium text-white text-sm">{jugador.nombre}</p>
-          <p className="text-xs" style={{ color }}>{etiqueta}</p>
+          <p className="text-xs" style={{ color: subtextColor }}>{etiqueta}</p>
         </div>
       </div>
       <div className="text-right flex-shrink-0">
@@ -228,12 +232,14 @@ function PlayerRow({
           <div className="text-right">
             <span
               className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-              style={{ background: '#ef444415', color: '#ef4444' }}
+              style={{ background: `${accentColor}15`, color: accentColor }}
             >
-              {proximoPago.mesesDeuda > 1 ? `${proximoPago.mesesDeuda} meses` : 'Pendiente'}
+              {proximoPago.mesesDeuda > 1 ? `${proximoPago.mesesDeuda} meses` : isParcial ? 'Parcial' : 'Pendiente'}
             </span>
             <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
-              {formatCOP(Number(jugador.cuota_mensual))}
+              {isParcial
+                ? formatCOP(proximoPago.pendienteParcial!)
+                : formatCOP(Number(jugador.cuota_mensual))}
             </p>
           </div>
         )}
