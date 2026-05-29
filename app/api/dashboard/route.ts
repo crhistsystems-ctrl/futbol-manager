@@ -1,21 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { revalidatePath } from 'next/cache';
 import { authOptions } from '@/lib/auth';
-import { deletePago } from '@/lib/sheets';
+import { getDashboard } from '@/lib/sheets';
 
-type Params = { params: Promise<{ id: string }> };
-
-export async function DELETE(_req: Request, { params }: Params) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { id } = await params;
   try {
-    const result = await deletePago(id);
-    revalidatePath('/dashboard');
-    revalidatePath('/jugadores');
-    return NextResponse.json(result);
+    const data = await getDashboard();
+    return NextResponse.json(data);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';
     return NextResponse.json({ error: msg }, { status: 500 });

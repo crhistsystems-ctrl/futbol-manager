@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { revalidatePath } from 'next/cache';
 import { authOptions } from '@/lib/auth';
 import { getJugador, updateJugador } from '@/lib/sheets';
 
@@ -27,6 +28,8 @@ export async function PUT(req: Request, { params }: Params) {
   try {
     const body = await req.json();
     const jugador = await updateJugador(id, body);
+    revalidatePath('/dashboard');
+    revalidatePath('/jugadores');
     return NextResponse.json(jugador);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';

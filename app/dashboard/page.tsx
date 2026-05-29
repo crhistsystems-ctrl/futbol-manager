@@ -18,13 +18,10 @@ export default function DashboardPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [jugRes, pagRes] = await Promise.all([
-        fetch('/api/jugadores'),
-        fetch('/api/pagos'),
-      ]);
-      const [jugData, pagData] = await Promise.all([jugRes.json(), pagRes.json()]);
-      setJugadores(Array.isArray(jugData) ? jugData.filter((j: Jugador) => j.activo) : []);
-      setTodosPagos(Array.isArray(pagData) ? pagData : []);
+      const res = await fetch('/api/dashboard');
+      const data = await res.json();
+      setJugadores(Array.isArray(data.jugadores) ? data.jugadores.filter((j: Jugador) => j.activo) : []);
+      setTodosPagos(Array.isArray(data.pagos) ? data.pagos : []);
     } catch {
       setJugadores([]);
       setTodosPagos([]);

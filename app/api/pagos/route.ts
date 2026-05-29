@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { revalidatePath } from 'next/cache';
 import { authOptions } from '@/lib/auth';
 import { getPagos, addPago } from '@/lib/sheets';
 
@@ -9,11 +10,9 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const jugadorId = searchParams.get('jugadorId') ?? undefined;
-  const mes = searchParams.get('mes') ? Number(searchParams.get('mes')) : undefined;
-  const año = searchParams.get('año') ? Number(searchParams.get('año')) : undefined;
 
   try {
-    const pagos = await getPagos(jugadorId, mes, año);
+    const pagos = await getPagos(jugadorId);
     return NextResponse.json(pagos);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';
@@ -28,6 +27,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const pago = await addPago(body);
+    revalidatePath('/dashboard');
+    revalidatePath('/jugadores');
     return NextResponse.json(pago);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';

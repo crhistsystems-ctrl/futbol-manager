@@ -68,6 +68,8 @@ function doGet(e) {
 
   try {
     switch (action) {
+      case 'getDashboard':
+        return jsonResponse({ jugadores: getJugadoresData(), pagos: getPagosData() });
       case 'getJugadores':
         return jsonResponse(getJugadoresData());
       case 'getJugador':
