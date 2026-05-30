@@ -89,12 +89,42 @@ export default function DashboardPage() {
       };
     }).sort((a, b) => a.Año !== b.Año ? b.Año - a.Año : b.Mes - a.Mes);
 
+    // Hoja 3 — Resumen por mes
+    const porMes = new Map<string, { recaudado: number; jugadores: Set<string>; esperado: number }>();
+    for (const p of todosPagos) {
+      const key = `${p.año}-${String(p.mes).padStart(2, '0')}`;
+      if (!porMes.has(key)) {
+        porMes.set(key, { recaudado: 0, jugadores: new Set(), esperado: 0 });
+      }
+      const entry = porMes.get(key)!;
+      entry.recaudado += Number(p.monto);
+      entry.jugadores.add(p.jugador_id);
+    }
+    const totalEsperadoMes = jugadores.reduce((s, j) => s + Number(j.cuota_mensual), 0);
+    const resumenData = [...porMes.entries()]
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([key, v]) => {
+        const [yr, mo] = key.split('-');
+        const MESES_N = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        return {
+          Mes: MESES_N[Number(mo)],
+          Año: Number(yr),
+          'Recaudado': v.recaudado,
+          'Esperado': totalEsperadoMes,
+          'Diferencia': v.recaudado - totalEsperadoMes,
+          'Jugadores que pagaron': v.jugadores.size,
+          'Total jugadores activos': jugadores.length,
+        };
+      });
+
     const wb = XLSX.utils.book_new();
     const ws1 = XLSX.utils.json_to_sheet(jugadoresData);
     const ws2 = XLSX.utils.json_to_sheet(pagosData);
+    const ws3 = XLSX.utils.json_to_sheet(resumenData);
 
     XLSX.utils.book_append_sheet(wb, ws1, 'Jugadores');
     XLSX.utils.book_append_sheet(wb, ws2, 'Abonos');
+    XLSX.utils.book_append_sheet(wb, ws3, 'Resumen por Mes');
 
     XLSX.writeFile(wb, `pumas-fc-${new Date().toISOString().split('T')[0]}.xlsx`);
   };
