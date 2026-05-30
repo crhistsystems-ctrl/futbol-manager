@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+} from 'recharts';
 import Navbar from '@/components/Navbar';
 import type { Jugador, Pago } from '@/types';
 import { formatCOP, formatMes, calcProximoPago, labelDias, colorDias, type ProximoPago } from '@/lib/format';
@@ -89,42 +92,12 @@ export default function DashboardPage() {
       };
     }).sort((a, b) => a.Año !== b.Año ? b.Año - a.Año : b.Mes - a.Mes);
 
-    // Hoja 3 — Resumen por mes
-    const porMes = new Map<string, { recaudado: number; jugadores: Set<string>; esperado: number }>();
-    for (const p of todosPagos) {
-      const key = `${p.año}-${String(p.mes).padStart(2, '0')}`;
-      if (!porMes.has(key)) {
-        porMes.set(key, { recaudado: 0, jugadores: new Set(), esperado: 0 });
-      }
-      const entry = porMes.get(key)!;
-      entry.recaudado += Number(p.monto);
-      entry.jugadores.add(p.jugador_id);
-    }
-    const totalEsperadoMes = jugadores.reduce((s, j) => s + Number(j.cuota_mensual), 0);
-    const resumenData = [...porMes.entries()]
-      .sort(([a], [b]) => b.localeCompare(a))
-      .map(([key, v]) => {
-        const [yr, mo] = key.split('-');
-        const MESES_N = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        return {
-          Mes: MESES_N[Number(mo)],
-          Año: Number(yr),
-          'Recaudado': v.recaudado,
-          'Esperado': totalEsperadoMes,
-          'Diferencia': v.recaudado - totalEsperadoMes,
-          'Jugadores que pagaron': v.jugadores.size,
-          'Total jugadores activos': jugadores.length,
-        };
-      });
-
     const wb = XLSX.utils.book_new();
     const ws1 = XLSX.utils.json_to_sheet(jugadoresData);
     const ws2 = XLSX.utils.json_to_sheet(pagosData);
-    const ws3 = XLSX.utils.json_to_sheet(resumenData);
 
     XLSX.utils.book_append_sheet(wb, ws1, 'Jugadores');
     XLSX.utils.book_append_sheet(wb, ws2, 'Abonos');
-    XLSX.utils.book_append_sheet(wb, ws3, 'Resumen por Mes');
 
     XLSX.writeFile(wb, `pumas-fc-${new Date().toISOString().split('T')[0]}.xlsx`);
   };
@@ -134,6 +107,19 @@ export default function DashboardPage() {
     const da = calcProximoPago(a, todosPagos).diasHasta;
     const db = calcProximoPago(b, todosPagos).diasHasta;
     return da - db;
+  });
+
+  // Datos para el gráfico: últimos 6 meses
+  const MESES_CORTOS = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const esperadoTotal = jugadores.reduce((s, j) => s + Number(j.cuota_mensual), 0);
+  const datosGrafico = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(today.getFullYear(), today.getMonth() - (5 - i), 1);
+    const m = d.getMonth() + 1;
+    const y = d.getFullYear();
+    const recaudado = todosPagos
+      .filter(p => Number(p.mes) === m && Number(p.año) === y)
+      .reduce((s, p) => s + Number(p.monto), 0);
+    return { label: MESES_CORTOS[m], recaudado, esperado: esperadoTotal };
   });
 
   return (
@@ -194,6 +180,55 @@ export default function DashboardPage() {
           <StatCard label="Al día" value={`${jugadoresPagaron.length} jugadores`} color="#22c55e" />
           <StatCard label="Pendientes" value={`${jugadoresDeben.length} jugadores`} color="#ef4444" />
         </div>
+
+        {/* Gráfico de barras — últimos 6 meses */}
+        {!loading && jugadores.length > 0 && (
+          <div className="rounded-xl p-4 mb-6" style={{ background: '#141414', border: '1px solid #1f1f1f' }}>
+            <p className="text-xs uppercase tracking-wide mb-4" style={{ color: '#6b7280' }}>
+              Recaudado vs Esperado — últimos 6 meses
+            </p>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={datosGrafico} barCategoryGap="30%" barGap={3}>
+                <XAxis
+                  dataKey="label"
+                  tick={{ fill: '#6b7280', fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis hide />
+                <Tooltip
+                  cursor={{ fill: '#ffffff08' }}
+                  contentStyle={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: '#9ca3af' }}
+                  formatter={(val: number, name: string) => [
+                    formatCOP(val),
+                    name === 'recaudado' ? 'Recaudado' : 'Esperado',
+                  ]}
+                />
+                <Bar dataKey="esperado" radius={[4, 4, 0, 0]} fill="#ffffff10" />
+                <Bar dataKey="recaudado" radius={[4, 4, 0, 0]}>
+                  {datosGrafico.map((entry, i) => (
+                    <Cell
+                      key={i}
+                      fill={entry.recaudado >= entry.esperado ? '#22c55e' : entry.recaudado > 0 ? '#f59e0b' : '#374151'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="flex gap-4 mt-2">
+              <span className="flex items-center gap-1.5 text-xs" style={{ color: '#6b7280' }}>
+                <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: '#ffffff10' }} /> Esperado
+              </span>
+              <span className="flex items-center gap-1.5 text-xs" style={{ color: '#22c55e' }}>
+                <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: '#22c55e' }} /> Completo
+              </span>
+              <span className="flex items-center gap-1.5 text-xs" style={{ color: '#f59e0b' }}>
+                <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: '#f59e0b' }} /> Parcial
+              </span>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center py-16" style={{ color: '#6b7280' }}>Cargando...</div>
