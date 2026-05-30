@@ -200,8 +200,8 @@ export default function DashboardPage() {
                   cursor={{ fill: '#ffffff08' }}
                   contentStyle={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, fontSize: 12 }}
                   labelStyle={{ color: '#9ca3af' }}
-                  formatter={(val: number, name: string) => [
-                    formatCOP(val),
+                  formatter={(val, name) => [
+                    formatCOP(Number(val ?? 0)),
                     name === 'recaudado' ? 'Recaudado' : 'Esperado',
                   ]}
                 />
