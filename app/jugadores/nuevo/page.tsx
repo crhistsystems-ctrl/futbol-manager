@@ -12,6 +12,7 @@ export default function NuevoJugadorPage() {
     nombre: '',
     telefono: '',
     acudiente: '',
+    telefono_acudiente: '',
     cuota_mensual: '',
     fecha_ingreso: today,
   });
@@ -108,6 +109,17 @@ export default function NuevoJugadorPage() {
               value={form.acudiente}
               onChange={set('acudiente')}
               placeholder="María García (mamá)"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1.5" style={{ color: '#9ca3af' }}>
+              Teléfono del acudiente <span style={{ color: '#4b5563' }}>(opcional)</span>
+            </label>
+            <input
+              type="tel"
+              value={form.telefono_acudiente}
+              onChange={set('telefono_acudiente')}
+              placeholder="300 765 4321"
             />
           </div>
           <div>

@@ -172,6 +172,14 @@ export default function JugadorDetallePage() {
                   onChange={e => setEditForm(p => ({ ...p, acudiente: e.target.value }))}
                 />
               </Field>
+              <Field label="Teléfono acudiente (opcional)">
+                <input
+                  type="tel"
+                  value={editForm.telefono_acudiente ?? ''}
+                  onChange={e => setEditForm(p => ({ ...p, telefono_acudiente: e.target.value }))}
+                  placeholder="opcional"
+                />
+              </Field>
               <Field label="Cuota mensual (COP)">
                 <input
                   type="number"
@@ -202,6 +210,9 @@ export default function JugadorDetallePage() {
             <div className="space-y-2.5">
               <InfoRow label="Teléfono" value={jugador.telefono || '—'} />
               <InfoRow label="Acudiente" value={jugador.acudiente || '—'} />
+              {jugador.telefono_acudiente && (
+                <InfoRow label="Tel. acudiente" value={jugador.telefono_acudiente} />
+              )}
               <InfoRow label="Ingresó" value={formatFecha(jugador.fecha_ingreso)} />
               <div className="border-t pt-2.5 space-y-2" style={{ borderColor: '#1f1f1f' }}>
                 <InfoRow

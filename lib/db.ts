@@ -72,9 +72,9 @@ export async function addJugador(payload: Omit<Jugador, 'id' | 'activo'>): Promi
 
     const id = crypto.randomUUID();
     await db.execute({
-      sql: `INSERT INTO jugadores (id, nombre, telefono, acudiente, cuota_mensual, fecha_ingreso, activo)
-            VALUES (?, ?, ?, ?, ?, ?, 1)`,
-      args: [id, payload.nombre, payload.telefono, payload.acudiente, payload.cuota_mensual, payload.fecha_ingreso],
+      sql: `INSERT INTO jugadores (id, nombre, telefono, acudiente, telefono_acudiente, cuota_mensual, fecha_ingreso, activo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
+      args: [id, payload.nombre, payload.telefono, payload.acudiente, payload.telefono_acudiente ?? null, payload.cuota_mensual, payload.fecha_ingreso],
     });
     return { id, ...payload, activo: true };
   } catch (err) {
@@ -94,7 +94,8 @@ export async function updateJugador(id: string, payload: Partial<Jugador>): Prom
     if (payload.acudiente !== undefined)     { fields.push('acudiente = ?');     args.push(payload.acudiente); }
     if (payload.cuota_mensual !== undefined) { fields.push('cuota_mensual = ?'); args.push(payload.cuota_mensual); }
     if (payload.fecha_ingreso !== undefined) { fields.push('fecha_ingreso = ?'); args.push(payload.fecha_ingreso); }
-    if (payload.activo !== undefined)        { fields.push('activo = ?');        args.push(payload.activo ? 1 : 0); }
+    if (payload.telefono_acudiente !== undefined) { fields.push('telefono_acudiente = ?'); args.push(payload.telefono_acudiente ?? null); }
+    if (payload.activo !== undefined)             { fields.push('activo = ?');             args.push(payload.activo ? 1 : 0); }
 
     if (fields.length === 0) return { updated: false };
 
@@ -161,6 +162,7 @@ function toJugador(row: Record<string, unknown>): Jugador {
     nombre: String(row.nombre ?? ''),
     telefono: String(row.telefono ?? ''),
     acudiente: String(row.acudiente ?? ''),
+    telefono_acudiente: row.telefono_acudiente ? String(row.telefono_acudiente) : undefined,
     cuota_mensual: Number(row.cuota_mensual ?? 0),
     fecha_ingreso: String(row.fecha_ingreso ?? ''),
     activo: row.activo === 1 || row.activo === true,

@@ -3,6 +3,7 @@ export interface Jugador {
   nombre: string;
   telefono: string;
   acudiente: string;
+  telefono_acudiente?: string;
   cuota_mensual: number;
   fecha_ingreso: string;
   activo: boolean;

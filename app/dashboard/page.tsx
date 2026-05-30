@@ -61,6 +61,31 @@ export default function DashboardPage() {
     return da - db;
   });
 
+  const exportarCSV = () => {
+    const encabezado = ['Nombre', 'Teléfono', 'Acudiente', 'Tel. Acudiente', 'Cuota Mensual', 'Fecha Ingreso', 'Mes Pago', 'Año Pago', 'Monto Pagado', 'Fecha Pago', 'Notas'];
+    const filas: string[][] = [];
+
+    for (const j of jugadores) {
+      const pagosJ = todosPagos.filter(p => p.jugador_id === j.id);
+      if (pagosJ.length === 0) {
+        filas.push([j.nombre, j.telefono, j.acudiente, (j as any).telefono_acudiente ?? '', String(j.cuota_mensual), j.fecha_ingreso, '', '', '', '', '']);
+      } else {
+        for (const p of pagosJ) {
+          filas.push([j.nombre, j.telefono, j.acudiente, (j as any).telefono_acudiente ?? '', String(j.cuota_mensual), j.fecha_ingreso, String(p.mes), String(p.año), String(p.monto), p.fecha, p.notas ?? '']);
+        }
+      }
+    }
+
+    const csv = [encabezado, ...filas].map(row => row.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pumas-fc-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Ordenar al día: próximo vencimiento más cercano primero
   const aldiaOrdenados = [...jugadoresPagaron].sort((a, b) => {
     const da = calcProximoPago(a, todosPagos).diasHasta;
@@ -73,19 +98,33 @@ export default function DashboardPage() {
       <Navbar />
 
       <main className="max-w-2xl mx-auto px-4 pt-6 md:pt-8">
-        {/* Header con botón agregar */}
+        {/* Header con botones */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="font-bebas text-4xl text-white tracking-wider leading-none">PANEL</h1>
-          <button
-            onClick={() => router.push('/jugadores/nuevo')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-            style={{ background: '#1d4ed8' }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Agregar jugador
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={exportarCSV}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium"
+              style={{ background: '#141414', border: '1px solid #1f1f1f', color: '#9ca3af' }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Excel
+            </button>
+            <button
+              onClick={() => router.push('/jugadores/nuevo')}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
+              style={{ background: '#1d4ed8' }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Agregar jugador
+            </button>
+          </div>
         </div>
 
         {/* Month navigator */}
