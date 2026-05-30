@@ -61,29 +61,42 @@ export default function DashboardPage() {
     return da - db;
   });
 
-  const exportarCSV = () => {
-    const encabezado = ['Nombre', 'Teléfono', 'Acudiente', 'Tel. Acudiente', 'Cuota Mensual', 'Fecha Ingreso', 'Mes Pago', 'Año Pago', 'Monto Pagado', 'Fecha Pago', 'Notas'];
-    const filas: string[][] = [];
+  const exportarExcel = async () => {
+    const XLSX = await import('xlsx');
 
-    for (const j of jugadores) {
-      const pagosJ = todosPagos.filter(p => p.jugador_id === j.id);
-      if (pagosJ.length === 0) {
-        filas.push([j.nombre, j.telefono, j.acudiente, (j as any).telefono_acudiente ?? '', String(j.cuota_mensual), j.fecha_ingreso, '', '', '', '', '']);
-      } else {
-        for (const p of pagosJ) {
-          filas.push([j.nombre, j.telefono, j.acudiente, (j as any).telefono_acudiente ?? '', String(j.cuota_mensual), j.fecha_ingreso, String(p.mes), String(p.año), String(p.monto), p.fecha, p.notas ?? '']);
-        }
-      }
-    }
+    // Hoja 1 — Jugadores
+    const jugadoresData = jugadores.map(j => ({
+      Nombre: j.nombre,
+      Teléfono: j.telefono || '',
+      Acudiente: j.acudiente || '',
+      'Tel. Acudiente': (j as any).telefono_acudiente || '',
+      'Cuota Mensual': Number(j.cuota_mensual),
+      'Fecha Ingreso': j.fecha_ingreso,
+      Estado: j.activo ? 'Activo' : 'Inactivo',
+    }));
 
-    const csv = [encabezado, ...filas].map(row => row.map(c => `"${c}"`).join(',')).join('\n');
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pumas-fc-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Hoja 2 — Abonos/Pagos
+    const pagosData = todosPagos.map(p => {
+      const j = jugadores.find(jj => jj.id === p.jugador_id);
+      return {
+        Jugador: p.jugador_nombre || j?.nombre || '',
+        'Teléfono Jugador': j?.telefono || '',
+        Mes: Number(p.mes),
+        Año: Number(p.año),
+        'Monto Abonado': Number(p.monto),
+        'Fecha Pago': p.fecha,
+        Notas: p.notas || '',
+      };
+    }).sort((a, b) => a.Año !== b.Año ? b.Año - a.Año : b.Mes - a.Mes);
+
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.json_to_sheet(jugadoresData);
+    const ws2 = XLSX.utils.json_to_sheet(pagosData);
+
+    XLSX.utils.book_append_sheet(wb, ws1, 'Jugadores');
+    XLSX.utils.book_append_sheet(wb, ws2, 'Abonos');
+
+    XLSX.writeFile(wb, `pumas-fc-${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   // Ordenar al día: próximo vencimiento más cercano primero
@@ -103,7 +116,7 @@ export default function DashboardPage() {
           <h1 className="font-bebas text-4xl text-white tracking-wider leading-none">PANEL</h1>
           <div className="flex gap-2">
             <button
-              onClick={exportarCSV}
+              onClick={exportarExcel}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium"
               style={{ background: '#141414', border: '1px solid #1f1f1f', color: '#9ca3af' }}
             >
